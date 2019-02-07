@@ -16,7 +16,7 @@ fn pci() -> io::Result<()> {
 
     for dev in devs {
         println!(
-            "PCI Device: {}: Class {:>08X}, Vendor {:>04X}, Device {:>04X}, Revision {}",
+            "PCI Device: {}: Class 0x{:>08X}, Vendor 0x{:>04X}, Device 0x{:>04X}, Revision 0x{:>02X}",
             dev.id(),
             dev.class()?,
             dev.vendor()?,
@@ -81,11 +81,18 @@ fn gpio() -> io::Result<()> {
         let mut pad = 0;
         for group in community.groups.iter() {
             for i in 0..group.count {
-                let data = unsafe { sideband.gpio(community.id, pad) };
-                let low = data as u32;
-                let high = (data >> 32) as u32;
-                println!("{}{} = {:#>08x} {:#>08x}", group.name, i, low, high);
-                pad += 1;
+                let mut dwords = Vec::new();
+                for _j in 0..community.step {
+                    let data = unsafe { sideband.gpio(community.id, pad) };
+                    dwords.push(data as u32);
+                    dwords.push((data >> 32) as u32);
+                    pad += 1;
+                }
+                print!("{}{} =", group.name, i);
+                for dword in dwords {
+                    print!(" 0x{:>08x}", dword);
+                }
+                println!();
             }
         }
     }
@@ -102,22 +109,34 @@ fn read_trimmed<P: AsRef<path::Path>>(p: P) -> io::Result<String> {
 }
 
 fn hdaudio() -> io::Result<()> {
+    let mut codecs = Vec::new();
     for entry_res in fs::read_dir("/sys/bus/hdaudio/devices")? {
         let entry = entry_res?;
-        let path = entry.path();
-        println!("{}", path.display());
+        codecs.push(entry.path());
+    }
+
+    codecs.sort();
+
+    for path in codecs {
+        println!("{}", path.file_name().unwrap().to_str().unwrap());
         println!("  vendor_name: {}", read_trimmed(path.join("vendor_name"))?);
         println!("  chip_name: {}", read_trimmed(path.join("chip_name"))?);
         println!("  vendor_id: {}", read_trimmed(path.join("vendor_id"))?);
         println!("  subsystem_id: {}", read_trimmed(path.join("subsystem_id"))?);
         println!("  revision_id: {}", read_trimmed(path.join("revision_id"))?);
 
+        let mut widgets = Vec::new();
         for entry_res in fs::read_dir(path.join("widgets"))? {
             let entry = entry_res?;
-            let path = entry.path();
+            widgets.push(entry.path());
+        }
+
+        widgets.sort();
+
+        for path in widgets {
             if let Ok(pin_cfg) = read_trimmed(path.join("pin_cfg")) {
                 if ! pin_cfg.is_empty() {
-                    println!("  {}: {}", path.display(), pin_cfg);
+                    println!("  0x{}: {}", path.file_name().unwrap().to_str().unwrap(), pin_cfg);
                 }
             }
         }

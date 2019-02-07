@@ -5,6 +5,7 @@ pub struct GpioGroup<'a> {
 
 pub struct GpioCommunity<'a> {
     pub id: u8,
+    pub step: usize,
     pub groups: &'a [GpioGroup<'a>]
 }
 
@@ -13,6 +14,7 @@ impl<'a> GpioCommunity<'a> {
         &[
             GpioCommunity {
                 id: 0xAF,
+                step: 1,
                 groups: &[
                     GpioGroup {
                         name: "GPP_A",
@@ -26,6 +28,7 @@ impl<'a> GpioCommunity<'a> {
             },
             GpioCommunity {
                 id: 0xAE,
+                step: 1,
                 groups: &[
                     GpioGroup {
                         name: "GPP_C",
@@ -55,6 +58,7 @@ impl<'a> GpioCommunity<'a> {
             },
             GpioCommunity {
                 id: 0xAD,
+                step: 1,
                 groups: &[
                     GpioGroup {
                         name: "GPD",
@@ -64,6 +68,7 @@ impl<'a> GpioCommunity<'a> {
             },
             GpioCommunity {
                 id: 0xAC,
+                step: 1,
                 groups: &[
                     GpioGroup {
                         name: "GPP_I",
@@ -78,6 +83,7 @@ impl<'a> GpioCommunity<'a> {
         &[
             GpioCommunity {
                 id: 0x6E,
+                step: 2,
                 groups: &[
                     GpioGroup {
                         name: "GPP_A",
@@ -95,6 +101,7 @@ impl<'a> GpioCommunity<'a> {
             },
             GpioCommunity {
                 id: 0x6D,
+                step: 2,
                 groups: &[
                     GpioGroup {
                         name: "GPP_D",
@@ -112,6 +119,7 @@ impl<'a> GpioCommunity<'a> {
             },
             GpioCommunity {
                 id: 0x6C,
+                step: 2,
                 groups: &[
                     GpioGroup {
                         name: "GPD",
@@ -121,6 +129,7 @@ impl<'a> GpioCommunity<'a> {
             },
             GpioCommunity {
                 id: 0x6A,
+                step: 2,
                 groups: &[
                     GpioGroup {
                         name: "GPP_C",
