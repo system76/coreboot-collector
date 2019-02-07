@@ -1,0 +1,10 @@
+[package]
+name = "coreboot-collector"
+version = "0.1.0"
+authors = ["Jeremy Soller <jeremy@system76.com>"]
+edition = "2018"
+
+[dependencies]
+libc = "0.2"
+sysfs-class = { git = "https://github.com/pop-os/sysfs-class.git" }
+system76-power = { git = "https://github.com/pop-os/system76-power.git" }
