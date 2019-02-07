@@ -63,7 +63,7 @@ impl<'a> GpioCommunity<'a> {
                     GpioGroup {
                         name: "GPD",
                         count: 12
-                    }
+                    },
                 ]
             },
             GpioCommunity {
@@ -73,7 +73,68 @@ impl<'a> GpioCommunity<'a> {
                     GpioGroup {
                         name: "GPP_I",
                         count: 11
-                    }
+                    },
+                ]
+            }
+        ]
+    }
+
+    pub fn skylake_lp() -> &'static [GpioCommunity<'static>] {
+        &[
+            GpioCommunity {
+                id: 0xAF,
+                step: 1,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_A",
+                        count: 24
+                    },
+                    GpioGroup {
+                        name: "GPP_B",
+                        count: 24
+                    },
+                ],
+            },
+            GpioCommunity {
+                id: 0xAE,
+                step: 1,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_C",
+                        count: 24
+                    },
+                    GpioGroup {
+                        name: "GPP_D",
+                        count: 24
+                    },
+                    GpioGroup {
+                        name: "GPP_E",
+                        count: 24
+                    },
+                ],
+            },
+            GpioCommunity {
+                id: 0xAD,
+                step: 1,
+                groups: &[
+                    GpioGroup {
+                        name: "GPD",
+                        count: 12
+                    },
+                ]
+            },
+            GpioCommunity {
+                id: 0xAC,
+                step: 1,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_F",
+                        count: 24
+                    },
+                    GpioGroup {
+                        name: "GPP_G",
+                        count: 8
+                    },
                 ]
             }
         ]
