@@ -37,18 +37,18 @@ fn gpio_communities() -> io::Result<&'static [GpioCommunity<'static>]> {
         if dev.class()? == 0x00060100 && dev.vendor()? == 0x8086 {
             match dev.device()? & 0xFF80 {
                 // 100 Series PCH (Sky Lake)
-                0xA100 => {
-                    println!("Sky Lake PCH");
+                0xA100 | 0x9D00 => {
+                    println!("100 Series PCH");
                     return Ok(GpioCommunity::skylake());
                 },
-                // 200 Series PCH (Kaby Lake, compatible with Sky Lake)
+                // 200 Series PCH (Compatible with Sky Lake)
                 0xA280 => {
-                    println!("Kaby Lake PCH");
+                    println!("200 Series PCH");
                     return Ok(GpioCommunity::skylake());
                 },
-                // Cannon Lake PCH
-                0xA300 => {
-                    println!("Cannon Lake PCH");
+                // 300 Series PCH (Cannon Lake)
+                0xA300 | 0x9D80 => {
+                    println!("300 Series PCH");
                     return Ok(GpioCommunity::cannonlake());
                 },
                 // Unknown PCH
