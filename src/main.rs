@@ -86,16 +86,12 @@ fn gpio() -> io::Result<()> {
         let mut pad = 0;
         for group in community.groups.iter() {
             for i in 0..group.count {
-                let mut dwords = Vec::new();
+                print!("{}{} ({:X}, {:X}) =", group.name, i, community.id, pad);
                 for _j in 0..community.step {
                     let data = unsafe { sideband.gpio(community.id, pad) };
-                    dwords.push(data as u32);
-                    dwords.push((data >> 32) as u32);
+                    print!(" 0x{:>08x}", data as u32);
+                    print!(" 0x{:>08x}", (data >> 32) as u32);
                     pad += 1;
-                }
-                print!("{}{} =", group.name, i);
-                for dword in dwords {
-                    print!(" 0x{:>08x}", dword);
                 }
                 println!();
             }
