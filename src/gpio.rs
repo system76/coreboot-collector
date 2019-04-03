@@ -198,7 +198,7 @@ impl<'a> GpioCommunity<'a> {
                     },
                     GpioGroup {
                         name: "GPP_E",
-                        count: 12,
+                        count: 13,
                     },
                     GpioGroup {
                         name: "GPP_F",
