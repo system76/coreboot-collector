@@ -46,16 +46,24 @@ fn gpio_communities() -> io::Result<&'static [GpioCommunity<'static>]> {
                     println!("100 Series PCH-LP");
                     return Ok(GpioCommunity::skylake_lp());
                 }
+
                 // 200 Series PCH (Compatible with Sky Lake)
                 0xA280 => {
                     println!("200 Series PCH");
                     return Ok(GpioCommunity::skylake());
                 },
+
                 // 300 Series PCH (Cannon Lake)
-                0xA300 | 0x9D80 => {
+                0xA300 => {
                     println!("300 Series PCH");
                     return Ok(GpioCommunity::cannonlake());
                 },
+                // 300 Series PCH-LP (Cannon Lake LP)
+                0x9D80 => {
+                    println!("300 Series PCH-LP");
+                    return Ok(GpioCommunity::cannonlake_lp());
+                },
+
                 // Unknown PCH
                 unknown => {
                     eprintln!("Unknown PCH: {:#>04X}", unknown);
