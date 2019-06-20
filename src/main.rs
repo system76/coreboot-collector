@@ -39,18 +39,18 @@ fn gpio_communities() -> io::Result<&'static [GpioCommunity<'static>]> {
                 // 100 Series PCH (Sky Lake)
                 0xA100 => {
                     println!("100 Series PCH");
-                    return Ok(GpioCommunity::skylake());
+                    //return Ok(GpioCommunity::skylake());
                 },
                 // 100 Series PCH-LP (Sky Lake LP)
                 0x9D00 => {
                     println!("100 Series PCH-LP");
-                    return Ok(GpioCommunity::skylake_lp());
+                    //return Ok(GpioCommunity::skylake_lp());
                 }
 
                 // 200 Series PCH (Compatible with Sky Lake)
                 0xA280 => {
                     println!("200 Series PCH");
-                    return Ok(GpioCommunity::skylake());
+                    //return Ok(GpioCommunity::skylake());
                 },
 
                 // 300 Series PCH (Cannon Lake)
@@ -91,10 +91,12 @@ fn gpio() -> io::Result<()> {
     };
 
     for community in communities.iter() {
-        let mut pad = 0;
+        let padbar = 0x600;
         for group in community.groups.iter() {
+            let mut pad = ((group.offset - padbar) / 8) as u8;
             for i in 0..group.count {
-                print!("{}{} =", group.name, i);
+                print!("{}{}", group.name, i);
+                print!(" (0x{:>02X},0x{:>02X})", community.id, pad);
                 for _j in 0..community.step {
                     let data = unsafe { sideband.gpio(community.id, pad) };
                     print!(" 0x{:>08x}", data as u32);
