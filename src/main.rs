@@ -90,9 +90,21 @@ fn gpio() -> io::Result<()> {
         })?
     };
 
-    for community in communities.iter() {
+    for (community_num, community) in communities.iter().enumerate() {
+        println!(
+            "### GPIO Community {}: MISCCFG=0x{:>08X} ###",
+            community_num,
+            unsafe { sideband.read(community.id, 0x10) }
+        );
         let padbar = 0x600;
-        for group in community.groups.iter() {
+        for (group_num, group) in community.groups.iter().enumerate() {
+            println!(
+                "#### {}: GPI_IE=0x{:>08X} GPE_EN=0x{:>08X} SMI_EN=0x{:>08X} ####",
+                group.name,
+                unsafe { sideband.read(community.id, 0x120 + group_num as u32 * 4) },
+                unsafe { sideband.read(community.id, 0x160 + group_num as u32 * 4) },
+                unsafe { sideband.read(community.id, 0x1A0 + group_num as u32 * 4) }
+            );
             let mut pad = ((group.offset - padbar) / 8) as u8;
             for i in 0..group.count {
                 print!("{}{}", group.name, i);
