@@ -44,7 +44,7 @@ fn gpio_communities() -> io::Result<&'static [GpioCommunity<'static>]> {
                 // 100 Series PCH-LP (Sky Lake LP)
                 0x9D00 => {
                     println!("100 Series PCH-LP");
-                    //return Ok(GpioCommunity::skylake_lp());
+                    return Ok(GpioCommunity::skylake_lp());
                 }
 
                 // 200 Series PCH (Compatible with Sky Lake)

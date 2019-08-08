@@ -80,6 +80,7 @@ impl<'a> GpioCommunity<'a> {
             }
         ]
     }
+    */
 
     pub fn skylake_lp() -> &'static [GpioCommunity<'static>] {
         &[
@@ -89,10 +90,12 @@ impl<'a> GpioCommunity<'a> {
                 groups: &[
                     GpioGroup {
                         name: "GPP_A",
+                        offset: 0x400,
                         count: 24
                     },
                     GpioGroup {
                         name: "GPP_B",
+                        offset: 0x4C0,
                         count: 24
                     },
                 ],
@@ -103,14 +106,17 @@ impl<'a> GpioCommunity<'a> {
                 groups: &[
                     GpioGroup {
                         name: "GPP_C",
+                        offset: 0x400,
                         count: 24
                     },
                     GpioGroup {
                         name: "GPP_D",
+                        offset: 0x4C0,
                         count: 24
                     },
                     GpioGroup {
                         name: "GPP_E",
+                        offset: 0x580,
                         count: 24
                     },
                 ],
@@ -121,6 +127,7 @@ impl<'a> GpioCommunity<'a> {
                 groups: &[
                     GpioGroup {
                         name: "GPD",
+                        offset: 0x400,
                         count: 12
                     },
                 ]
@@ -131,17 +138,18 @@ impl<'a> GpioCommunity<'a> {
                 groups: &[
                     GpioGroup {
                         name: "GPP_F",
+                        offset: 0x400,
                         count: 24
                     },
                     GpioGroup {
                         name: "GPP_G",
+                        offset: 0x4C0,
                         count: 8
                     },
                 ]
             }
         ]
     }
-    */
 
     pub fn cannonlake() -> &'static [GpioCommunity<'static>] {
         &[
