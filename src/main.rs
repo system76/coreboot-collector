@@ -91,9 +91,8 @@ fn gpio() -> io::Result<()> {
     };
 
     for community in communities.iter() {
-        let padbar = 0x600;
         for group in community.groups.iter() {
-            let mut pad = ((group.offset - padbar) / 8) as u8;
+            let mut pad = ((group.offset - community.offset) / 8) as u8;
             for i in 0..group.count {
                 print!("{}{}", group.name, i);
                 print!(" (0x{:>02X},0x{:>02X})", community.id, pad);

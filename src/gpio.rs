@@ -7,6 +7,7 @@ pub struct GpioGroup<'a> {
 pub struct GpioCommunity<'a> {
     pub id: u8,
     pub step: usize,
+    pub offset: u16,
     pub groups: &'a [GpioGroup<'a>]
 }
 
@@ -16,6 +17,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0xAF,
                 step: 1,
+                offset: 0x400,
                 groups: &[
                     GpioGroup {
                         name: "GPP_A",
@@ -32,6 +34,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0xAE,
                 step: 1,
+                offset: 0x400,
                 groups: &[
                     GpioGroup {
                         name: "GPP_C",
@@ -68,6 +71,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0xAD,
                 step: 1,
+                offset: 0x400,
                 groups: &[
                     GpioGroup {
                         name: "GPD",
@@ -79,6 +83,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0xAC,
                 step: 1,
+                offset: 0x400,
                 groups: &[
                     GpioGroup {
                         name: "GPP_I",
@@ -95,6 +100,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0xAF,
                 step: 1,
+                offset: 0x400,
                 groups: &[
                     GpioGroup {
                         name: "GPP_A",
@@ -111,6 +117,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0xAE,
                 step: 1,
+                offset: 0x400,
                 groups: &[
                     GpioGroup {
                         name: "GPP_C",
@@ -132,6 +139,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0xAD,
                 step: 1,
+                offset: 0x400,
                 groups: &[
                     GpioGroup {
                         name: "GPD",
@@ -143,6 +151,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0xAC,
                 step: 1,
+                offset: 0x400,
                 groups: &[
                     GpioGroup {
                         name: "GPP_F",
@@ -164,6 +173,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6E,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPP_A",
@@ -180,6 +190,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6D,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPP_C",
@@ -201,6 +212,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6C,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPD",
@@ -212,6 +224,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6B,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPP_K",
@@ -238,6 +251,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6A,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPP_I",
@@ -259,6 +273,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6E,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPP_A",
@@ -280,6 +295,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6D,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPP_D",
@@ -301,6 +317,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6C,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPD",
@@ -312,6 +329,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6A,
                 step: 2,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPP_C",
