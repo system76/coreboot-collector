@@ -64,6 +64,12 @@ fn gpio_communities() -> io::Result<&'static [GpioCommunity<'static>]> {
                     return Ok(GpioCommunity::cannonlake_lp());
                 },
 
+                // 400 Series PCH-LP (Comet Lake LP, compatible with Cannon Lake LP)
+                0x0280 => {
+                    println!("400 Series PCH-LP");
+                    return Ok(GpioCommunity::cannonlake_lp());
+                }
+
                 // Unknown PCH
                 unknown => {
                     eprintln!("Unknown PCH: {:#>04X}", unknown);
