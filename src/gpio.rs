@@ -1,17 +1,34 @@
 pub struct GpioGroup<'a> {
     pub name: &'a str,
-    pub offset: u16,
-    pub count: u8,
+    pub offset: usize,
+    pub count: usize,
 }
 
 pub struct GpioCommunity<'a> {
     pub id: u8,
     pub step: usize,
-    pub offset: u16,
+    pub offset: usize,
     pub groups: &'a [GpioGroup<'a>]
 }
 
 impl<'a> GpioCommunity<'a> {
+    pub fn b450() -> &'static [GpioCommunity<'static>] {
+        &[
+            GpioCommunity {
+                id: 0,
+                step: 1,
+                offset: 0xFED8_1500,
+                groups: &[
+                    GpioGroup {
+                        name: "GPIO",
+                        offset: 0,
+                        count: 256,
+                    },
+                ],
+            },
+        ]
+    }
+
     pub fn skylake() -> &'static [GpioCommunity<'static>] {
         &[
             GpioCommunity {

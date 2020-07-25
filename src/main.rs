@@ -5,6 +5,7 @@ extern crate system76_power;
 
 use coreboot_collector::gpio::GpioCommunity;
 use std::{fs, io, path, process};
+use std::io::{Read, Seek};
 use sysfs_class::{PciDevice, SysClass};
 use system76_power::sideband::Sideband;
 
@@ -28,56 +29,83 @@ fn pci() -> io::Result<()> {
     Ok(())
 }
 
-fn gpio_communities() -> io::Result<&'static [GpioCommunity<'static>]> {
+enum GpioVendor {
+    Amd,
+    Intel,
+}
+
+fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static>])> {
     let mut devs = PciDevice::all()?;
     devs.sort_by(|a, b| {
         a.id().cmp(&b.id())
     });
     for dev in devs {
-        if dev.class()? == 0x00060100 && dev.vendor()? == 0x8086 {
-            match dev.device()? & 0xFF80 {
-                // 100 Series PCH (Sky Lake)
-                0xA100 => {
-                    println!("100 Series PCH");
-                    return Ok(GpioCommunity::skylake());
-                },
-                // 100 Series PCH-LP (Sky Lake LP)
-                0x9D00 => {
-                    println!("100 Series PCH-LP");
-                    return Ok(GpioCommunity::skylake_lp());
-                }
+        if dev.class()? == 0x00060100 {
+            match dev.vendor()? {
+                // AMD
+                0x1022 => match dev.device()? {
+                    // B450
+                    0x790E => {
+                        println!("B450 FCH");
+                        return Ok((GpioVendor::Amd, GpioCommunity::b450()));
+                    },
 
-                // 200 Series PCH (Compatible with Sky Lake)
-                0xA280 => {
-                    println!("200 Series PCH");
-                    return Ok(GpioCommunity::skylake());
+                    // Unknown PCH
+                    unknown => {
+                        eprintln!("Unknown FCH: {:#>04X}", unknown);
+                    },
                 },
 
-                // 300 Series PCH (Cannon Lake)
-                0xA300 => {
-                    println!("300 Series PCH");
-                    return Ok(GpioCommunity::cannonlake());
-                },
-                // 300 Series PCH-LP (Cannon Lake LP)
-                0x9D80 => {
-                    println!("300 Series PCH-LP");
-                    return Ok(GpioCommunity::cannonlake_lp());
+                // Intel
+                0x8086 => match dev.device()? & 0xFF80 {
+                    // 100 Series PCH (Sky Lake)
+                    0xA100 => {
+                        println!("100 Series PCH");
+                        return Ok((GpioVendor::Intel, GpioCommunity::skylake()));
+                    },
+                    // 100 Series PCH-LP (Sky Lake LP)
+                    0x9D00 => {
+                        println!("100 Series PCH-LP");
+                        return Ok((GpioVendor::Intel, GpioCommunity::skylake_lp()));
+                    }
+
+                    // 200 Series PCH (Compatible with Sky Lake)
+                    0xA280 => {
+                        println!("200 Series PCH");
+                        return Ok((GpioVendor::Intel, GpioCommunity::skylake()));
+                    },
+
+                    // 300 Series PCH (Cannon Lake)
+                    0xA300 => {
+                        println!("300 Series PCH");
+                        return Ok((GpioVendor::Intel, GpioCommunity::cannonlake()));
+                    },
+                    // 300 Series PCH-LP (Cannon Lake LP)
+                    0x9D80 => {
+                        println!("300 Series PCH-LP");
+                        return Ok((GpioVendor::Intel, GpioCommunity::cannonlake_lp()));
+                    },
+
+                    // 400 Series PCH (Comet Lake, compatible with Cannon Lake)
+                    0x0680 => {
+                        println!("400 Series PCH");
+                        return Ok((GpioVendor::Intel, GpioCommunity::cannonlake()));
+                    },
+                    // 400 Series PCH-LP (Comet Lake LP, compatible with Cannon Lake LP)
+                    0x0280 => {
+                        println!("400 Series PCH-LP");
+                        return Ok((GpioVendor::Intel, GpioCommunity::cannonlake_lp()));
+                    },
+
+                    // Unknown PCH
+                    unknown => {
+                        eprintln!("Unknown PCH: {:#>04X}", unknown);
+                    },
                 },
 
-                // 400 Series PCH (Comet Lake, compatible with Cannon Lake)
-                0x0680 => {
-                    println!("400 Series PCH");
-                    return Ok(GpioCommunity::cannonlake());
-                },
-                // 400 Series PCH-LP (Comet Lake LP, compatible with Cannon Lake LP)
-                0x0280 => {
-                    println!("400 Series PCH-LP");
-                    return Ok(GpioCommunity::cannonlake_lp());
-                },
-
-                // Unknown PCH
+                // Unknown vendor
                 unknown => {
-                    eprintln!("Unknown PCH: {:#>04X}", unknown);
+                    eprintln!("Unknown chipset vendor: {:#>04X}", unknown);
                 },
             }
         }
@@ -85,35 +113,61 @@ fn gpio_communities() -> io::Result<&'static [GpioCommunity<'static>]> {
 
     Err(io::Error::new(
         io::ErrorKind::NotFound,
-        "Failed to find compatible Intel PCH"
+        "Failed to find compatible chipset"
     ))
 }
 
 fn gpio() -> io::Result<()> {
-    let communities = gpio_communities()?;
+    let (vendor, communities) = gpio_communities()?;
 
-    let sideband = unsafe {
-        Sideband::new(0xFD00_0000).map_err(|err| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                err
-            )
-        })?
-    };
+    match vendor {
+        GpioVendor::Amd => {
+            let mut mem = fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .open("/dev/mem")?;
 
-    for community in communities.iter() {
-        for group in community.groups.iter() {
-            let mut pad = ((group.offset - community.offset) / 8) as u8;
-            for i in 0..group.count {
-                print!("{}{}", group.name, i);
-                print!(" (0x{:>02X},0x{:>02X})", community.id, pad);
-                for _j in 0..community.step {
-                    let data = unsafe { sideband.gpio(community.id, pad) };
-                    print!(" 0x{:>08x}", data as u32);
-                    print!(" 0x{:>08x}", (data >> 32) as u32);
-                    pad += 1;
+            for community in communities.iter() {
+                for group in community.groups.iter() {
+                    for i in 0..group.count {
+                        print!("{}{}", group.name, i);
+
+                        let offset = community.offset + group.offset + i * 4;
+                        mem.seek(io::SeekFrom::Start(offset as u64))?;
+
+                        let mut data = [0; 4];
+                        mem.read(&mut data)?;
+
+                        println!(" 0x{:>08x}", u32::from_ne_bytes(data));
+                    }
                 }
-                println!();
+            }
+        },
+        GpioVendor::Intel => {
+            let sideband = unsafe {
+                Sideband::new(0xFD00_0000).map_err(|err| {
+                    io::Error::new(
+                        io::ErrorKind::Other,
+                        err
+                    )
+                })?
+            };
+
+            for community in communities.iter() {
+                for group in community.groups.iter() {
+                    let mut pad = ((group.offset - community.offset) / 8) as u8;
+                    for i in 0..group.count {
+                        print!("{}{}", group.name, i);
+                        print!(" (0x{:>02X},0x{:>02X})", community.id, pad);
+                        for _j in 0..community.step {
+                            let data = unsafe { sideband.gpio(community.id, pad) };
+                            print!(" 0x{:>08x}", data as u32);
+                            print!(" 0x{:>08x}", (data >> 32) as u32);
+                            pad += 1;
+                        }
+                        println!();
+                    }
+                }
             }
         }
     }
