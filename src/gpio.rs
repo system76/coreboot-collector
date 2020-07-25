@@ -17,7 +17,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0,
                 step: 1,
-                offset: 0xFED8_1500,
+                offset: 0,
                 groups: &[
                     GpioGroup {
                         name: "GPIO",

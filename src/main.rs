@@ -132,13 +132,17 @@ fn gpio() -> io::Result<()> {
                     for i in 0..group.count {
                         print!("{}{}", group.name, i);
 
-                        let offset = community.offset + group.offset + i * 4;
-                        mem.seek(io::SeekFrom::Start(offset as u64))?;
+                        let function_offset = 0xFED8_0D00 + i;
+                        mem.seek(io::SeekFrom::Start(function_offset as u64))?;
+                        let mut function = [0; 1];
+                        mem.read(&mut function)?;
 
-                        let mut data = [0; 4];
-                        mem.read(&mut data)?;
+                        let control_offset = 0xFED8_1500 + i * 4;
+                        mem.seek(io::SeekFrom::Start(control_offset as u64))?;
+                        let mut control = [0; 4];
+                        mem.read(&mut control)?;
 
-                        println!(" 0x{:>08x}", u32::from_ne_bytes(data));
+                        println!(" 0x{:>02x} 0x{:>08x}", function[0], u32::from_ne_bytes(control));
                     }
                 }
             }
