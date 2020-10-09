@@ -29,11 +29,16 @@ static union acpi_object * dump_object(union acpi_object * obj) {
 			pr_info("Buffer (0x%x) {", obj->buffer.length);
 			for (i = 0; i < obj->buffer.length; i++) {
 				if (i > 0) {
-					pr_cont(", ");
+					pr_cont(",");
 				}
-				pr_cont("0x%02X", obj->buffer.pointer[i]);
+				if ((i % 8) == 0) {
+					pr_cont("\n");
+					pr_info(" ");
+				}
+				pr_cont(" 0x%02X", obj->buffer.pointer[i]);
 			}
-			pr_cont("}\n");
+			pr_cont("\n");
+			pr_info("}\n");
 			break;
 		default:
 			pr_info("Unsupported type: 0x%x\n", obj->type);
