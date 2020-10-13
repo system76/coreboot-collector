@@ -97,6 +97,12 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                         return Ok((GpioVendor::Intel, GpioCommunity::cannonlake_lp()));
                     },
 
+                    // 500 Series PCH-LP (Tiger Lake LP)
+                    0xA080 => {
+                        println!("500 Series PCH-LP");
+                        return Ok((GpioVendor::Intel, GpioCommunity::tigerlake_lp()));
+                    },
+
                     // Unknown PCH
                     unknown => {
                         eprintln!("Unknown PCH: {:#>04X}", unknown);
@@ -129,7 +135,7 @@ fn gpio() -> io::Result<()> {
 
             for community in communities.iter() {
                 for group in community.groups.iter() {
-                    for i in 0..group.count {
+                    for i in group.start..group.start + group.count {
                         print!("{}{}", group.name, i);
 
                         let function_offset = 0xFED8_0D00 + i;
@@ -160,7 +166,7 @@ fn gpio() -> io::Result<()> {
             for community in communities.iter() {
                 for group in community.groups.iter() {
                     let mut pad = ((group.offset - community.offset) / 8) as u8;
-                    for i in 0..group.count {
+                    for i in group.start..group.start + group.count {
                         print!("{}{}", group.name, i);
                         print!(" (0x{:>02X},0x{:>02X})", community.id, pad);
                         for _j in 0..community.step {
