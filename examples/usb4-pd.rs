@@ -4,29 +4,9 @@ extern crate sysfs_class;
 
 use coreboot_collector::gpio::GpioCommunity;
 use coreboot_collector::sideband::Sideband;
-use std::{fs, io, path, process};
+use std::{fs, io, process};
 use std::io::{Read, Seek};
 use sysfs_class::{PciDevice, SysClass};
-
-fn pci() -> io::Result<()> {
-    let mut devs = PciDevice::all()?;
-    devs.sort_by(|a, b| {
-        a.id().cmp(&b.id())
-    });
-
-    for dev in devs {
-        println!(
-            "PCI Device: {}: Class 0x{:>08X}, Vendor 0x{:>04X}, Device 0x{:>04X}, Revision 0x{:>02X}",
-            dev.id(),
-            dev.class()?,
-            dev.vendor()?,
-            dev.device()?,
-            dev.revision()?
-        );
-    }
-
-    Ok(())
-}
 
 enum GpioVendor {
     Amd,
@@ -166,15 +146,23 @@ fn gpio() -> io::Result<()> {
                 for group in community.groups.iter() {
                     let mut pad = ((group.offset - community.offset) / 8) as u8;
                     for i in group.start..group.start + group.count {
-                        print!("{}{}", group.name, i);
-                        print!(" (0x{:>02X},0x{:>02X})", community.id, pad);
-                        for _j in 0..community.step {
-                            let data = unsafe { sideband.gpio(community.id, pad) };
-                            print!(" 0x{:>08x}", data as u32);
-                            print!(" 0x{:>08x}", (data >> 32) as u32);
+                        for j in 0..community.step {
+                            if group.name == "GPP_E" && i == 1 && j == 0 {
+                                print!("{}{}", group.name, i);
+                                let mut data = unsafe { sideband.gpio(community.id, pad) };
+                                print!(" 0x{:>08x}", data as u32);
+                                print!(" 0x{:>08x}", (data >> 32) as u32);
+                                print!(" =>");
+
+                                data |= 1;
+                                print!(" 0x{:>08x}", data as u32);
+                                print!(" 0x{:>08x}", (data >> 32) as u32);
+                                unsafe { sideband.set_gpio(community.id, pad, data) };
+
+                                println!();
+                            }
                             pad += 1;
                         }
-                        println!();
                     }
                 }
             }
@@ -184,72 +172,14 @@ fn gpio() -> io::Result<()> {
     Ok(())
 }
 
-fn read_trimmed<P: AsRef<path::Path>>(p: P) -> io::Result<String> {
-    Ok(
-        fs::read_to_string(p)?
-            .trim()
-            .to_string()
-    )
-}
-
-fn hdaudio() -> io::Result<()> {
-    let mut codecs = Vec::new();
-    for entry_res in fs::read_dir("/sys/bus/hdaudio/devices")? {
-        let entry = entry_res?;
-        codecs.push(entry.path());
-    }
-
-    codecs.sort();
-
-    for path in codecs {
-        println!("{}", path.file_name().unwrap().to_str().unwrap());
-        println!("  vendor_name: {}", read_trimmed(path.join("vendor_name"))?);
-        println!("  chip_name: {}", read_trimmed(path.join("chip_name"))?);
-        println!("  vendor_id: {}", read_trimmed(path.join("vendor_id"))?);
-        println!("  subsystem_id: {}", read_trimmed(path.join("subsystem_id"))?);
-        println!("  revision_id: {}", read_trimmed(path.join("revision_id"))?);
-
-        let mut widgets = Vec::new();
-        for entry_res in fs::read_dir(path.join("widgets"))? {
-            let entry = entry_res?;
-            widgets.push(entry.path());
-        }
-
-        widgets.sort();
-
-        for path in widgets {
-            if let Ok(pin_cfg) = read_trimmed(path.join("pin_cfg")) {
-                if ! pin_cfg.is_empty() {
-                    println!("  0x{}: {}", path.file_name().unwrap().to_str().unwrap(), pin_cfg);
-                }
-            }
-        }
-    }
-
-    Ok(())
-}
-
-fn inner() -> io::Result<()> {
-    println!("## PCI ##");
-    pci()?;
-
-    println!("## GPIO ##");
-    gpio()?;
-
-    println!("## HDAUDIO ##");
-    hdaudio()?;
-
-    Ok(())
-}
-
 fn main() {
     if unsafe { libc::geteuid() } != 0 {
-        eprintln!("coreboot_collector: must be run as root");
+        eprintln!("usb4-pd: must be run as root");
         process::exit(1);
     }
 
-    if let Err(err) = inner() {
-        eprintln!("coreboot-collector: {:?}", err);
+    if let Err(err) = gpio() {
+        eprintln!("usb4-pd: {:?}", err);
         process::exit(1);
     }
 }
