@@ -96,6 +96,11 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                         return Ok((GpioVendor::Intel, GpioCommunity::cannonlake_lp()));
                     },
 
+                    // 500 Series PCH (Tiger Lake)
+                    0x4380 => {
+                        println!("500 Series PCH");
+                        return Ok((GpioVendor::Intel, GpioCommunity::tigerlake()));
+                    },
                     // 500 Series PCH-LP (Tiger Lake LP)
                     0xA080 => {
                         println!("500 Series PCH-LP");

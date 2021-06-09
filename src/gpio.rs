@@ -409,7 +409,7 @@ impl<'a> GpioCommunity<'a> {
             GpioCommunity {
                 id: 0x6E,
                 step: 2,
-                offset: 0x680,
+                offset: 0x600,
                 groups: &[
                     GpioGroup {
                         name: "GPP_A",
