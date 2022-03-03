@@ -107,6 +107,12 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                         return Ok((GpioVendor::Intel, GpioCommunity::tigerlake_lp()));
                     },
 
+                    // 600 Series PCH-LP (Alder Lake LP)
+                    0x5180 => {
+                        println!("600 Series PCH-LP");
+                        return Ok((GpioVendor::Intel, GpioCommunity::alderlake_lp()));
+                    },
+
                     // Unknown PCH
                     unknown => {
                         eprintln!("Unknown PCH: {:#>04X}", unknown);
