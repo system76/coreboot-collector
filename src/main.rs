@@ -30,7 +30,7 @@ fn pci() -> io::Result<()> {
 
 enum GpioVendor {
     Amd,
-    Intel,
+    Intel(usize),
 }
 
 fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static>])> {
@@ -60,63 +60,63 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                     // 100 Series PCH (Sky Lake)
                     0xA100 => {
                         println!("100 Series PCH");
-                        return Ok((GpioVendor::Intel, GpioCommunity::skylake()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::skylake()));
                     },
                     // 100 Series PCH-LP (Sky Lake LP)
                     0x9D00 => {
                         println!("100 Series PCH-LP");
-                        return Ok((GpioVendor::Intel, GpioCommunity::skylake_lp()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::skylake_lp()));
                     }
 
                     // 200 Series PCH (Compatible with Sky Lake)
                     0xA280 => {
                         println!("200 Series PCH");
-                        return Ok((GpioVendor::Intel, GpioCommunity::skylake()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::skylake()));
                     },
 
                     // 300 Series PCH (Cannon Lake)
                     0xA300 => {
                         println!("300 Series PCH");
-                        return Ok((GpioVendor::Intel, GpioCommunity::cannonlake()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake()));
                     },
                     // 300 Series PCH-LP (Cannon Lake LP)
                     0x9D80 => {
                         println!("300 Series PCH-LP");
-                        return Ok((GpioVendor::Intel, GpioCommunity::cannonlake_lp()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake_lp()));
                     },
 
                     // 400 Series PCH (Comet Lake, compatible with Cannon Lake)
                     0x0680 => {
                         println!("400 Series PCH");
-                        return Ok((GpioVendor::Intel, GpioCommunity::cannonlake()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake()));
                     },
                     // 400 Series PCH-LP (Comet Lake LP, compatible with Cannon Lake LP)
                     0x0280 => {
                         println!("400 Series PCH-LP");
-                        return Ok((GpioVendor::Intel, GpioCommunity::cannonlake_lp()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake_lp()));
                     },
 
                     // 500 Series PCH (Tiger Lake)
                     0x4380 => {
                         println!("500 Series PCH");
-                        return Ok((GpioVendor::Intel, GpioCommunity::tigerlake()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::tigerlake()));
                     },
                     // 500 Series PCH-LP (Tiger Lake LP)
                     0xA080 => {
                         println!("500 Series PCH-LP");
-                        return Ok((GpioVendor::Intel, GpioCommunity::tigerlake_lp()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::tigerlake_lp()));
                     },
 
                     // 600 Series PCH-LP (Alder Lake LP)
                     0x5180 => {
                         println!("600 Series PCH-LP");
-                        return Ok((GpioVendor::Intel, GpioCommunity::alderlake_lp()));
+                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::alderlake_lp()));
                     },
 
                     // 600 Series PCH (Alder Lake)
                     0x7A00 => {
                         println!("600 Series PCH");
-                        return Ok((GpioVendor::Intel, GpioCommunity::alderlake()));
+                        return Ok((GpioVendor::Intel(0xE000_0000), GpioCommunity::alderlake()));
                     }
 
                     // Unknown PCH
@@ -169,9 +169,9 @@ fn gpio() -> io::Result<()> {
                 }
             }
         },
-        GpioVendor::Intel => {
+        GpioVendor::Intel(sbbar) => {
             let sideband = unsafe {
-                Sideband::new(0xFD00_0000).map_err(|err| {
+                Sideband::new(sbbar).map_err(|err| {
                     io::Error::new(
                         io::ErrorKind::Other,
                         err
