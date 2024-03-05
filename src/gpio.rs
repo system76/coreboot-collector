@@ -885,4 +885,98 @@ impl<'a> GpioCommunity<'a> {
             },
         ]
     }
+
+    pub fn meteorlake_hu() -> &'static [GpioCommunity<'static>] {
+        &[
+            GpioCommunity {
+                id: 0xD1,
+                step: 2,
+                offset: 0x650,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_V",
+                        offset: 0x650,
+                        start: 0,
+                        count: 24,
+                    },
+                    GpioGroup {
+                        name: "GPP_C",
+                        offset: 0x7D0,
+                        start: 0,
+                        count: 24,
+                    },
+                ],
+            },
+            GpioCommunity {
+                id: 0xD2,
+                step: 2,
+                offset: 0x600,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_A",
+                        offset: 0x600,
+                        start: 0,
+                        count: 22,
+                    },
+                    GpioGroup {
+                        name: "GPP_E",
+                        offset: 0x790,
+                        start: 0,
+                        count: 23,
+                    },
+                ],
+            },
+            GpioCommunity {
+                id: 0xD3,
+                step: 2,
+                offset: 0x600,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_H",
+                        offset: 0x600,
+                        start: 0,
+                        count: 23,
+                    },
+                    GpioGroup {
+                        name: "GPP_F",
+                        offset: 0x7A0,
+                        start: 0,
+                        count: 24,
+                    },
+                ],
+            },
+            GpioCommunity {
+                id: 0xD4,
+                step: 2,
+                offset: 0x600,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_S",
+                        offset: 0x600,
+                        start: 0,
+                        count: 8,
+                    },
+                ],
+            },
+            GpioCommunity {
+                id: 0xD5,
+                step: 2,
+                offset: 0x600,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_B",
+                        offset: 0x600,
+                        start: 0,
+                        count: 24,
+                    },
+                    GpioGroup {
+                        name: "GPP_D",
+                        offset: 0x790,
+                        start: 0,
+                        count: 24,
+                    },
+                ],
+            },
+        ]
+    }
 }
