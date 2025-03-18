@@ -125,6 +125,12 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                         return Ok((GpioVendor::Intel(0xE000_0000), GpioCommunity::meteorlake_hu()));
                     }
 
+                    // Arrow Lake H/U
+                    0x7700 => {
+                        println!("ARL-H/U PCH");
+                        return Ok((GpioVendor::Intel(0xE000_0000), GpioCommunity::meteorlake_hu()));
+                    }
+
                     // Unknown PCH
                     unknown => {
                         eprintln!("Unknown PCH: {:#>04X}", unknown);
