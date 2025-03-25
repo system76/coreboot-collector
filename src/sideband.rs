@@ -45,7 +45,9 @@ impl Sideband {
             return Err(SidebandError::MapFailed(io::Error::last_os_error()));
         }
 
-        Ok(Sideband { addr: sbreg_virt as u64 })
+        Ok(Sideband {
+            addr: sbreg_virt as u64,
+        })
     }
 
     pub unsafe fn ptr(&self, port: u8, reg: u32) -> Option<*mut u32> {
