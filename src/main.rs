@@ -155,7 +155,7 @@ fn gpio_communities() -> io::Result<Vec<(GpioVendor, &'static [GpioCommunity<'st
                     0x7F00 => {
                         println!("800 series PCH");
                         communities.push((
-                            GpioVendor::Intel(0x3FFE0000000),
+                            GpioVendor::Intel(0x9FF0000000),
                             GpioCommunity::arrowlake_pch_s(),
                         ));
                     }
