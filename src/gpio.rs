@@ -982,6 +982,7 @@ impl<'a> GpioCommunity<'a> {
 
     pub fn arrowlake() -> &'static [GpioCommunity<'static>] {
         &[
+            // PCH communities
             GpioCommunity {
                 id: 0x6E,
                 step: 2,
@@ -1099,6 +1100,45 @@ impl<'a> GpioCommunity<'a> {
                         offset: 0x600,
                         start: 0,
                         count: 17,
+                    },
+                ],
+            },
+            // SOC communities
+            GpioCommunity {
+                id: 0xD1,
+                step: 2,
+                offset: 0x600,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_SA",
+                        offset: 0x600,
+                        start: 0,
+                        count: 24,
+                    },
+                    GpioGroup {
+                        name: "GPP_SC",
+                        offset: 0x8E0,
+                        start: 0,
+                        count: 27,
+                    },
+                ],
+            },
+            GpioCommunity {
+                id: 0xD2,
+                step: 2,
+                offset: 0x600,
+                groups: &[
+                    GpioGroup {
+                        name: "GPP_SB",
+                        offset: 0x600,
+                        start: 0,
+                        count: 20,
+                    },
+                    GpioGroup {
+                        name: "GPP_SD",
+                        offset: 0x760,
+                        start: 0,
+                        count: 24,
                     },
                 ],
             },
