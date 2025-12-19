@@ -10,9 +10,7 @@ use sysfs_class::{PciDevice, SysClass};
 
 fn pci() -> io::Result<()> {
     let mut devs = PciDevice::all()?;
-    devs.sort_by(|a, b| {
-        a.id().cmp(&b.id())
-    });
+    devs.sort_by(|a, b| a.id().cmp(b.id()));
 
     for dev in devs {
         println!(
@@ -35,9 +33,7 @@ enum GpioVendor {
 
 fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static>])> {
     let mut devs = PciDevice::all()?;
-    devs.sort_by(|a, b| {
-        a.id().cmp(&b.id())
-    });
+    devs.sort_by(|a, b| a.id().cmp(b.id()));
     for dev in devs {
         if dev.class()? == 0x00060100 {
             match dev.vendor()? {
@@ -169,12 +165,12 @@ fn gpio() -> io::Result<()> {
                         let function_offset = 0xFED8_0D00 + i;
                         mem.seek(io::SeekFrom::Start(function_offset as u64))?;
                         let mut function = [0; 1];
-                        mem.read(&mut function)?;
+                        mem.read_exact(&mut function)?;
 
                         let control_offset = 0xFED8_1500 + i * 4;
                         mem.seek(io::SeekFrom::Start(control_offset as u64))?;
                         let mut control = [0; 4];
-                        mem.read(&mut control)?;
+                        mem.read_exact(&mut control)?;
 
                         println!(" 0x{:>02x} 0x{:>08x}", function[0], u32::from_ne_bytes(control));
                     }
@@ -184,10 +180,7 @@ fn gpio() -> io::Result<()> {
         GpioVendor::Intel(sbbar) => {
             let sideband = unsafe {
                 Sideband::new(sbbar).map_err(|err| {
-                    io::Error::new(
-                        io::ErrorKind::Other,
-                        err
-                    )
+                    io::Error::other(err)
                 })?
             };
 
@@ -231,7 +224,10 @@ fn hdaudio() -> io::Result<()> {
     codecs.sort();
 
     for path in codecs {
-        println!("{}", path.file_name().unwrap().to_str().unwrap());
+        let name = path.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("unknown");
+        println!("{}", name);
         println!("  vendor_name: {}", read_trimmed(path.join("vendor_name"))?);
         println!("  chip_name: {}", read_trimmed(path.join("chip_name"))?);
         println!("  vendor_id: {}", read_trimmed(path.join("vendor_id"))?);
@@ -248,8 +244,11 @@ fn hdaudio() -> io::Result<()> {
 
         for path in widgets {
             if let Ok(pin_cfg) = read_trimmed(path.join("pin_cfg")) {
-                if ! pin_cfg.is_empty() {
-                    println!("  0x{}: {}", path.file_name().unwrap().to_str().unwrap(), pin_cfg);
+                if !pin_cfg.is_empty() {
+                    let widget_name = path.file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("unknown");
+                    println!("  0x{}: {}", widget_name, pin_cfg);
                 }
             }
         }

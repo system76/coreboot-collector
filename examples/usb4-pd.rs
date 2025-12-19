@@ -15,9 +15,7 @@ enum GpioVendor {
 
 fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static>])> {
     let mut devs = PciDevice::all()?;
-    devs.sort_by(|a, b| {
-        a.id().cmp(&b.id())
-    });
+    devs.sort_by(|a, b| a.id().cmp(b.id()));
     for dev in devs {
         if dev.class()? == 0x00060100 {
             match dev.vendor()? {
@@ -120,12 +118,12 @@ fn gpio() -> io::Result<()> {
                         let function_offset = 0xFED8_0D00 + i;
                         mem.seek(io::SeekFrom::Start(function_offset as u64))?;
                         let mut function = [0; 1];
-                        mem.read(&mut function)?;
+                        mem.read_exact(&mut function)?;
 
                         let control_offset = 0xFED8_1500 + i * 4;
                         mem.seek(io::SeekFrom::Start(control_offset as u64))?;
                         let mut control = [0; 4];
-                        mem.read(&mut control)?;
+                        mem.read_exact(&mut control)?;
 
                         println!(" 0x{:>02x} 0x{:>08x}", function[0], u32::from_ne_bytes(control));
                     }
@@ -135,10 +133,7 @@ fn gpio() -> io::Result<()> {
         GpioVendor::Intel => {
             let sideband = unsafe {
                 Sideband::new(0xFD00_0000).map_err(|err| {
-                    io::Error::new(
-                        io::ErrorKind::Other,
-                        err
-                    )
+                    io::Error::other(err)
                 })?
             };
 
