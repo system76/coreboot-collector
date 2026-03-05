@@ -1,4 +1,5 @@
-use std::ops::{Bound, RangeBounds};
+use alloc::{string::String, vec, vec::Vec};
+use core::ops::{Bound, RangeBounds};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct GpioGroup {
@@ -975,7 +976,7 @@ impl GpioCommunity {
     pub fn pantherlake_hu() -> Vec<GpioCommunity> {
         vec![
             GpioCommunity {
-                id: 0xD1,
+                id: 0x59,
                 step: 2,
                 offset: 0x800,
                 groups: vec![
@@ -984,7 +985,7 @@ impl GpioCommunity {
                 ],
             },
             GpioCommunity {
-                id: 0xD2,
+                id: 0x5A,
                 step: 2,
                 offset: 0x800,
                 groups: vec![
@@ -993,7 +994,7 @@ impl GpioCommunity {
                 ],
             },
             GpioCommunity {
-                id: 0xD3,
+                id: 0x5B,
                 step: 2,
                 offset: 0x8F0,
                 groups: vec![
@@ -1002,13 +1003,13 @@ impl GpioCommunity {
                 ],
             },
             GpioCommunity {
-                id: 0xD4,
+                id: 0x5C,
                 step: 2,
                 offset: 0x800,
                 groups: vec![GpioGroup::new("GPP_S", 0x800, 0..=7)],
             },
             GpioCommunity {
-                id: 0xD5,
+                id: 0x5D,
                 step: 2,
                 offset: 0x800,
                 groups: vec![
