@@ -2,11 +2,15 @@ extern crate coreboot_collector;
 extern crate libc;
 extern crate sysfs_class;
 
-use coreboot_collector::gpio::GpioCommunity;
-use coreboot_collector::sideband::Sideband;
+use coreboot_collector::GpioCommunity;
 use std::io::{Read, Seek};
 use std::{fs, io, path, process};
 use sysfs_class::{PciDevice, SysClass};
+
+use self::sideband::Sideband;
+pub mod sideband;
+
+const MIB: usize = 1024 * 1024;
 
 fn pci() -> io::Result<()> {
     let mut devs = PciDevice::all()?;
@@ -28,7 +32,7 @@ fn pci() -> io::Result<()> {
 
 enum GpioVendor {
     Amd,
-    Intel(usize),
+    Intel(usize, usize),
 }
 
 fn gpio_communities() -> io::Result<(GpioVendor, Vec<GpioCommunity>)> {
@@ -56,30 +60,42 @@ fn gpio_communities() -> io::Result<(GpioVendor, Vec<GpioCommunity>)> {
                     // 100 Series PCH (Sky Lake)
                     0xA100 => {
                         println!("100 Series PCH");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::skylake()));
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
+                            GpioCommunity::skylake(),
+                        ));
                     }
                     // 100 Series PCH-LP (Sky Lake LP)
                     0x9D00 => {
                         println!("100 Series PCH-LP");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::skylake_lp()));
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
+                            GpioCommunity::skylake_lp(),
+                        ));
                     }
 
                     // 200 Series PCH (Compatible with Sky Lake)
                     0xA280 => {
                         println!("200 Series PCH");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::skylake()));
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
+                            GpioCommunity::skylake(),
+                        ));
                     }
 
                     // 300 Series PCH (Cannon Lake)
                     0xA300 => {
                         println!("300 Series PCH");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake()));
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
+                            GpioCommunity::cannonlake(),
+                        ));
                     }
                     // 300 Series PCH-LP (Cannon Lake LP)
                     0x9D80 => {
                         println!("300 Series PCH-LP");
                         return Ok((
-                            GpioVendor::Intel(0xFD00_0000),
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
                             GpioCommunity::cannonlake_lp(),
                         ));
                     }
@@ -87,13 +103,16 @@ fn gpio_communities() -> io::Result<(GpioVendor, Vec<GpioCommunity>)> {
                     // 400 Series PCH (Comet Lake, compatible with Cannon Lake)
                     0x0680 => {
                         println!("400 Series PCH");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake()));
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
+                            GpioCommunity::cannonlake(),
+                        ));
                     }
                     // 400 Series PCH-LP (Comet Lake LP, compatible with Cannon Lake LP)
                     0x0280 => {
                         println!("400 Series PCH-LP");
                         return Ok((
-                            GpioVendor::Intel(0xFD00_0000),
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
                             GpioCommunity::cannonlake_lp(),
                         ));
                     }
@@ -101,31 +120,43 @@ fn gpio_communities() -> io::Result<(GpioVendor, Vec<GpioCommunity>)> {
                     // 500 Series PCH (Tiger Lake)
                     0x4380 => {
                         println!("500 Series PCH");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::tigerlake()));
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
+                            GpioCommunity::tigerlake(),
+                        ));
                     }
                     // 500 Series PCH-LP (Tiger Lake LP)
                     0xA080 => {
                         println!("500 Series PCH-LP");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::tigerlake_lp()));
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
+                            GpioCommunity::tigerlake_lp(),
+                        ));
                     }
 
                     // 600 Series PCH-LP (Alder Lake LP)
                     0x5180 => {
                         println!("600 Series PCH-LP");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::alderlake_lp()));
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000, 16 * MIB),
+                            GpioCommunity::alderlake_lp(),
+                        ));
                     }
 
                     // 600 Series PCH (Alder Lake)
                     0x7A00 => {
                         println!("600 Series PCH");
-                        return Ok((GpioVendor::Intel(0xE000_0000), GpioCommunity::alderlake()));
+                        return Ok((
+                            GpioVendor::Intel(0xE000_0000, 16 * MIB),
+                            GpioCommunity::alderlake(),
+                        ));
                     }
 
                     // Meteor Lake H/U
                     0x7E00 => {
                         println!("MTL-H/U PCH");
                         return Ok((
-                            GpioVendor::Intel(0xE000_0000),
+                            GpioVendor::Intel(0xE000_0000, 16 * MIB),
                             GpioCommunity::meteorlake_hu(),
                         ));
                     }
@@ -134,7 +165,7 @@ fn gpio_communities() -> io::Result<(GpioVendor, Vec<GpioCommunity>)> {
                     0x7700 => {
                         println!("ARL-H/U PCH");
                         return Ok((
-                            GpioVendor::Intel(0xE000_0000),
+                            GpioVendor::Intel(0xE000_0000, 16 * MIB),
                             GpioCommunity::meteorlake_hu(),
                         ));
                     }
@@ -142,11 +173,8 @@ fn gpio_communities() -> io::Result<(GpioVendor, Vec<GpioCommunity>)> {
                     // Panther Lake H/U
                     0xE400 => {
                         println!("PTL-H/U PCH");
-                        //TODO: coreboot says there are two P2SB's:
-                        // - 0x40_0000_0000
-                        // - 0x40_1000_0000
                         return Ok((
-                            GpioVendor::Intel(0x40_1000_0000),
+                            GpioVendor::Intel(0x40_0000_0000, 256 * MIB),
                             GpioCommunity::pantherlake_hu(),
                         ));
                     }
@@ -195,9 +223,10 @@ fn gpio() -> io::Result<()> {
                 }
             }
         }
-        GpioVendor::Intel(sbbar) => {
+        GpioVendor::Intel(sbreg_phys, sbreg_size) => {
             let sideband = unsafe {
-                Sideband::new(sbbar).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
+                Sideband::new(sbreg_phys, sbreg_size)
+                    .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
             };
 
             for community in communities.iter() {

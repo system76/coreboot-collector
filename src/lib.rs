@@ -1,5 +1,6 @@
-#[macro_use]
-extern crate err_derive;
+#![no_std]
 
-pub mod gpio;
-pub mod sideband;
+extern crate alloc;
+
+pub use self::gpio::*;
+mod gpio;
