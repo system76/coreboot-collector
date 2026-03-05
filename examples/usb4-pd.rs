@@ -4,8 +4,8 @@ extern crate sysfs_class;
 
 use coreboot_collector::gpio::GpioCommunity;
 use coreboot_collector::sideband::Sideband;
-use std::{fs, io, process};
 use std::io::{Read, Seek};
+use std::{fs, io, process};
 use sysfs_class::{PciDevice, SysClass};
 
 enum GpioVendor {
@@ -13,11 +13,9 @@ enum GpioVendor {
     Intel,
 }
 
-fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static>])> {
+fn gpio_communities() -> io::Result<(GpioVendor, Vec<GpioCommunity>)> {
     let mut devs = PciDevice::all()?;
-    devs.sort_by(|a, b| {
-        a.id().cmp(&b.id())
-    });
+    devs.sort_by(|a, b| a.id().cmp(&b.id()));
     for dev in devs {
         if dev.class()? == 0x00060100 {
             match dev.vendor()? {
@@ -27,12 +25,12 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                     0x790E => {
                         println!("B450 FCH");
                         return Ok((GpioVendor::Amd, GpioCommunity::b450()));
-                    },
+                    }
 
                     // Unknown PCH
                     unknown => {
                         eprintln!("Unknown FCH: {:#>04X}", unknown);
-                    },
+                    }
                 },
 
                 // Intel
@@ -41,7 +39,7 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                     0xA100 => {
                         println!("100 Series PCH");
                         return Ok((GpioVendor::Intel, GpioCommunity::skylake()));
-                    },
+                    }
                     // 100 Series PCH-LP (Sky Lake LP)
                     0x9D00 => {
                         println!("100 Series PCH-LP");
@@ -52,54 +50,51 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                     0xA280 => {
                         println!("200 Series PCH");
                         return Ok((GpioVendor::Intel, GpioCommunity::skylake()));
-                    },
+                    }
 
                     // 300 Series PCH (Cannon Lake)
                     0xA300 => {
                         println!("300 Series PCH");
                         return Ok((GpioVendor::Intel, GpioCommunity::cannonlake()));
-                    },
+                    }
                     // 300 Series PCH-LP (Cannon Lake LP)
                     0x9D80 => {
                         println!("300 Series PCH-LP");
                         return Ok((GpioVendor::Intel, GpioCommunity::cannonlake_lp()));
-                    },
+                    }
 
                     // 400 Series PCH (Comet Lake, compatible with Cannon Lake)
                     0x0680 => {
                         println!("400 Series PCH");
                         return Ok((GpioVendor::Intel, GpioCommunity::cannonlake()));
-                    },
+                    }
                     // 400 Series PCH-LP (Comet Lake LP, compatible with Cannon Lake LP)
                     0x0280 => {
                         println!("400 Series PCH-LP");
                         return Ok((GpioVendor::Intel, GpioCommunity::cannonlake_lp()));
-                    },
+                    }
 
                     // 500 Series PCH-LP (Tiger Lake LP)
                     0xA080 => {
                         println!("500 Series PCH-LP");
                         return Ok((GpioVendor::Intel, GpioCommunity::tigerlake_lp()));
-                    },
+                    }
 
                     // Unknown PCH
                     unknown => {
                         eprintln!("Unknown PCH: {:#>04X}", unknown);
-                    },
+                    }
                 },
 
                 // Unknown vendor
                 unknown => {
                     eprintln!("Unknown chipset vendor: {:#>04X}", unknown);
-                },
+                }
             }
         }
     }
 
-    Err(io::Error::new(
-        io::ErrorKind::NotFound,
-        "Failed to find compatible chipset"
-    ))
+    Err(io::Error::new(io::ErrorKind::NotFound, "Failed to find compatible chipset"))
 }
 
 fn gpio() -> io::Result<()> {
@@ -107,10 +102,7 @@ fn gpio() -> io::Result<()> {
 
     match vendor {
         GpioVendor::Amd => {
-            let mut mem = fs::OpenOptions::new()
-                .read(true)
-                .write(true)
-                .open("/dev/mem")?;
+            let mut mem = fs::OpenOptions::new().read(true).write(true).open("/dev/mem")?;
 
             for community in communities.iter() {
                 for group in community.groups.iter() {
@@ -131,15 +123,11 @@ fn gpio() -> io::Result<()> {
                     }
                 }
             }
-        },
+        }
         GpioVendor::Intel => {
             let sideband = unsafe {
-                Sideband::new(0xFD00_0000).map_err(|err| {
-                    io::Error::new(
-                        io::ErrorKind::Other,
-                        err
-                    )
-                })?
+                Sideband::new(0xFD00_0000)
+                    .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
             };
 
             for community in communities.iter() {
