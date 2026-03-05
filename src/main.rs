@@ -4,15 +4,13 @@ extern crate sysfs_class;
 
 use coreboot_collector::gpio::GpioCommunity;
 use coreboot_collector::sideband::Sideband;
-use std::{fs, io, path, process};
 use std::io::{Read, Seek};
+use std::{fs, io, path, process};
 use sysfs_class::{PciDevice, SysClass};
 
 fn pci() -> io::Result<()> {
     let mut devs = PciDevice::all()?;
-    devs.sort_by(|a, b| {
-        a.id().cmp(&b.id())
-    });
+    devs.sort_by(|a, b| a.id().cmp(&b.id()));
 
     for dev in devs {
         println!(
@@ -33,11 +31,9 @@ enum GpioVendor {
     Intel(usize),
 }
 
-fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static>])> {
+fn gpio_communities() -> io::Result<(GpioVendor, Vec<GpioCommunity>)> {
     let mut devs = PciDevice::all()?;
-    devs.sort_by(|a, b| {
-        a.id().cmp(&b.id())
-    });
+    devs.sort_by(|a, b| a.id().cmp(&b.id()));
     for dev in devs {
         if dev.class()? == 0x00060100 {
             match dev.vendor()? {
@@ -47,12 +43,12 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                     0x790E => {
                         println!("B450 FCH");
                         return Ok((GpioVendor::Amd, GpioCommunity::b450()));
-                    },
+                    }
 
                     // Unknown PCH
                     unknown => {
                         eprintln!("Unknown FCH: {:#>04X}", unknown);
-                    },
+                    }
                 },
 
                 // Intel
@@ -61,7 +57,7 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                     0xA100 => {
                         println!("100 Series PCH");
                         return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::skylake()));
-                    },
+                    }
                     // 100 Series PCH-LP (Sky Lake LP)
                     0x9D00 => {
                         println!("100 Series PCH-LP");
@@ -72,46 +68,52 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                     0xA280 => {
                         println!("200 Series PCH");
                         return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::skylake()));
-                    },
+                    }
 
                     // 300 Series PCH (Cannon Lake)
                     0xA300 => {
                         println!("300 Series PCH");
                         return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake()));
-                    },
+                    }
                     // 300 Series PCH-LP (Cannon Lake LP)
                     0x9D80 => {
                         println!("300 Series PCH-LP");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake_lp()));
-                    },
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000),
+                            GpioCommunity::cannonlake_lp(),
+                        ));
+                    }
 
                     // 400 Series PCH (Comet Lake, compatible with Cannon Lake)
                     0x0680 => {
                         println!("400 Series PCH");
                         return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake()));
-                    },
+                    }
                     // 400 Series PCH-LP (Comet Lake LP, compatible with Cannon Lake LP)
                     0x0280 => {
                         println!("400 Series PCH-LP");
-                        return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::cannonlake_lp()));
-                    },
+                        return Ok((
+                            GpioVendor::Intel(0xFD00_0000),
+                            GpioCommunity::cannonlake_lp(),
+                        ));
+                    }
 
                     // 500 Series PCH (Tiger Lake)
                     0x4380 => {
                         println!("500 Series PCH");
                         return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::tigerlake()));
-                    },
+                    }
                     // 500 Series PCH-LP (Tiger Lake LP)
                     0xA080 => {
                         println!("500 Series PCH-LP");
                         return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::tigerlake_lp()));
-                    },
+                    }
 
                     // 600 Series PCH-LP (Alder Lake LP)
                     0x5180 => {
                         println!("600 Series PCH-LP");
                         return Ok((GpioVendor::Intel(0xFD00_0000), GpioCommunity::alderlake_lp()));
-                    },
+                    }
 
                     // 600 Series PCH (Alder Lake)
                     0x7A00 => {
@@ -122,33 +124,48 @@ fn gpio_communities() -> io::Result<(GpioVendor, &'static [GpioCommunity<'static
                     // Meteor Lake H/U
                     0x7E00 => {
                         println!("MTL-H/U PCH");
-                        return Ok((GpioVendor::Intel(0xE000_0000), GpioCommunity::meteorlake_hu()));
+                        return Ok((
+                            GpioVendor::Intel(0xE000_0000),
+                            GpioCommunity::meteorlake_hu(),
+                        ));
                     }
 
                     // Arrow Lake H/U
                     0x7700 => {
                         println!("ARL-H/U PCH");
-                        return Ok((GpioVendor::Intel(0xE000_0000), GpioCommunity::meteorlake_hu()));
+                        return Ok((
+                            GpioVendor::Intel(0xE000_0000),
+                            GpioCommunity::meteorlake_hu(),
+                        ));
+                    }
+
+                    // Panther Lake H/U
+                    0xE400 => {
+                        println!("PTL-H/U PCH");
+                        //TODO: coreboot says there are two P2SB's:
+                        // - 0x40_0000_0000
+                        // - 0x40_1000_0000
+                        return Ok((
+                            GpioVendor::Intel(0x40_1000_0000),
+                            GpioCommunity::pantherlake_hu(),
+                        ));
                     }
 
                     // Unknown PCH
                     unknown => {
                         eprintln!("Unknown PCH: {:#>04X}", unknown);
-                    },
+                    }
                 },
 
                 // Unknown vendor
                 unknown => {
                     eprintln!("Unknown chipset vendor: {:#>04X}", unknown);
-                },
+                }
             }
         }
     }
 
-    Err(io::Error::new(
-        io::ErrorKind::NotFound,
-        "Failed to find compatible chipset"
-    ))
+    Err(io::Error::new(io::ErrorKind::NotFound, "Failed to find compatible chipset"))
 }
 
 fn gpio() -> io::Result<()> {
@@ -156,10 +173,7 @@ fn gpio() -> io::Result<()> {
 
     match vendor {
         GpioVendor::Amd => {
-            let mut mem = fs::OpenOptions::new()
-                .read(true)
-                .write(true)
-                .open("/dev/mem")?;
+            let mut mem = fs::OpenOptions::new().read(true).write(true).open("/dev/mem")?;
 
             for community in communities.iter() {
                 for group in community.groups.iter() {
@@ -180,15 +194,10 @@ fn gpio() -> io::Result<()> {
                     }
                 }
             }
-        },
+        }
         GpioVendor::Intel(sbbar) => {
             let sideband = unsafe {
-                Sideband::new(sbbar).map_err(|err| {
-                    io::Error::new(
-                        io::ErrorKind::Other,
-                        err
-                    )
-                })?
+                Sideband::new(sbbar).map_err(|err| io::Error::new(io::ErrorKind::Other, err))?
             };
 
             for community in communities.iter() {
@@ -214,11 +223,7 @@ fn gpio() -> io::Result<()> {
 }
 
 fn read_trimmed<P: AsRef<path::Path>>(p: P) -> io::Result<String> {
-    Ok(
-        fs::read_to_string(p)?
-            .trim()
-            .to_string()
-    )
+    Ok(fs::read_to_string(p)?.trim().to_string())
 }
 
 fn hdaudio() -> io::Result<()> {
@@ -248,7 +253,7 @@ fn hdaudio() -> io::Result<()> {
 
         for path in widgets {
             if let Ok(pin_cfg) = read_trimmed(path.join("pin_cfg")) {
-                if ! pin_cfg.is_empty() {
+                if !pin_cfg.is_empty() {
                     println!("  0x{}: {}", path.file_name().unwrap().to_str().unwrap(), pin_cfg);
                 }
             }
